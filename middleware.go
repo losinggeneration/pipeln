@@ -3,8 +3,13 @@ package pipeln
 import (
 	"fmt"
 	"html/template"
+	"io"
 	"log"
+	"mime"
 	"net/http"
+	"path/filepath"
+	"strconv"
+	"strings"
 
 	"github.com/losinggeneration/pipeln/assets"
 	helper "github.com/losinggeneration/pipeln/html/template"
@@ -67,6 +72,14 @@ func (a *Assets) ServeHTTP(w http.ResponseWriter, req *http.Request, next http.H
 		}
 	}
 	defer file.Close()
+
+	processed, err := a.Process(req.RequestURI)
+	if err == nil && processed != "" {
+		w.Header().Add("Content-Type", mime.TypeByExtension(filepath.Ext(file.Name())))
+		w.Header().Add("Content-Length", strconv.Itoa(len(processed)))
+		io.Copy(w, strings.NewReader(processed))
+		return
+	}
 
 	fi, err := file.Stat()
 	if err != nil {
