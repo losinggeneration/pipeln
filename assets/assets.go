@@ -105,7 +105,7 @@ func processJavascriptRequires(f *os.File) (string, error) {
 		fsrc += string(line) + "\n"
 
 		// Match ^//= require(_tree)? (.*)$
-		r, err := regexp.Compile(`^//=[[:blank:]]+require(?P<tree>_tree)?[[:blank:]]+(?P<argument>.*)$`)
+		r, err := regexp.Compile(`^//=[[:blank:]]*require(?P<tree>_tree)?[[:blank:]]+(?P<argument>.*)$`)
 		if err != nil {
 			return src, err
 		}
