@@ -179,6 +179,10 @@ func javascriptRequireTree(filename, argument string) (string, error) {
 }
 
 func javascriptRequire(filename, argument string) (string, error) {
+	if !strings.Contains(argument, ".js") {
+		argument += ".js"
+	}
+
 	file, err := os.Open(filepath.Join(filepath.Dir(filename), argument))
 	if err != nil {
 		return "", err
