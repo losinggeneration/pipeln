@@ -149,7 +149,33 @@ func processJavascriptRequires(f *os.File) (string, error) {
 }
 
 func javascriptRequireTree(filename, argument string) (string, error) {
-	return "", nil
+	var src string
+	base := filepath.Join(filepath.Dir(filename), argument)
+
+	filepath.Walk(base, func(path string, info os.FileInfo, err error) error {
+		// don't process directories as if they're files
+		if info.IsDir() {
+			return nil
+		}
+
+		if filepath.Ext(path) == ".js" {
+			file, err := os.Open(path)
+			if err != nil {
+				return err
+			}
+			defer file.Close()
+
+			s, err := processJavascriptRequires(file)
+			if err != nil {
+				return err
+			}
+			src += s
+		}
+
+		return nil
+	})
+
+	return src, nil
 }
 
 func javascriptRequire(filename, argument string) (string, error) {
