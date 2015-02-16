@@ -23,7 +23,22 @@ func verifyTagOpts(want string, opts ...TagOpts) error {
 	return nil
 }
 
-func verifyTag(got, want string) error {
+func verifyWant(got, want string) error {
+	if got == want {
+		return nil
+	}
+
+	// Make sure it's not missing any expected tags
+	for _, s := range strings.Split(want, " ") {
+		if !strings.Contains(got, s) {
+			return errors.New(fmt.Sprintf("'%v' is not in '%v'", s, got))
+		}
+	}
+
+	return nil
+}
+
+func verifyGot(got, want string) error {
 	if got == want {
 		return nil
 	}
@@ -35,12 +50,18 @@ func verifyTag(got, want string) error {
 		}
 	}
 
-	// Make sure it's not missing any expected tags
-	for _, s := range strings.Split(want, " ") {
-		if !strings.Contains(got, s) {
-			return errors.New(fmt.Sprintf("'%v' is not in '%v'", s, got))
-		}
+	return nil
+}
+
+func verifyTag(got, want string) error {
+	if err := verifyGot(got, want); err != nil {
+		return err
 	}
+
+	if err := verifyWant(got, want); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -151,6 +172,119 @@ func TestTag(t *testing.T) {
 		}
 
 		if err := verifyTag(got, s.want); err != nil {
+			t.Error(err)
+		}
+	}
+}
+
+func TestJavascriptIncludeTag(t *testing.T) {
+	tests := []struct {
+		tag  string
+		args []string
+		want string
+	}{
+		{"a.js", nil, `<script src="a.js" ></script>`},
+		{"a.js", []string{"fu", "bar"}, `<script src="a.js" fu="bar" ></script>`},
+		{"a.js", []string{"fu", "bar", "bar", "fu"}, `<script src="a.js" fu="bar" bar="fu" ></script>`},
+	}
+
+	for _, s := range tests {
+		tagopt, err := newTagOpts(s.args...)
+		if err != nil {
+			t.Error(err)
+		}
+
+		got := string(JavascriptIncludeTag(s.tag, tagopt))
+		if err := verifyTagOpts(got, tagopt); err != nil {
+			t.Error(err)
+		}
+
+		if err := verifyWant(got, s.want); err != nil {
+			t.Error(err)
+		}
+	}
+}
+
+func TestLinkTag(t *testing.T) {
+	tests := []struct {
+		tag  string
+		args []string
+		want string
+	}{
+		{"a", nil, `<link href="a" >`},
+		{"b", []string{"fu", "bar"}, `<link href="b" fu="bar" >`},
+		{"c", []string{"fu", "bar", "bar", "fu"}, `<link href="c" fu="bar" bar="fu" >`},
+	}
+
+	for _, s := range tests {
+		tagopt, err := newTagOpts(s.args...)
+		if err != nil {
+			t.Error(err)
+		}
+
+		got := string(linkTag(s.tag, tagopt))
+		if err := verifyTagOpts(got, tagopt); err != nil {
+			t.Error(err)
+		}
+
+		if err := verifyWant(got, s.want); err != nil {
+			t.Error(err)
+		}
+	}
+}
+
+func TestStylesheetLinkTag(t *testing.T) {
+	tests := []struct {
+		tag  string
+		args []string
+		want string
+	}{
+		{"a", nil, `<link href="a" rel="stylesheet" >`},
+		{"b", []string{"fu", "bar"}, `<link href="b" rel="stylesheet" fu="bar" >`},
+		{"c", []string{"fu", "bar", "bar", "fu"}, `<link href="c" rel="stylesheet" fu="bar" bar="fu" >`},
+	}
+
+	for _, s := range tests {
+		tagopt, err := newTagOpts(s.args...)
+		if err != nil {
+			t.Error(err)
+		}
+
+		got := string(StylesheetLinkTag(s.tag, tagopt))
+		if err := verifyTagOpts(got, tagopt); err != nil {
+			t.Error(err)
+		}
+
+		if err := verifyWant(got, s.want); err != nil {
+			t.Error(err)
+		}
+	}
+}
+
+func TestFaviconLinkTag(t *testing.T) {
+	tests := []struct {
+		name string
+		args []string
+		want string
+	}{
+		{"", nil, `<link href="" type="image/vnd.microsoft.icon" >`},
+		{"icon.ico", nil, `<link href="icon.ico" type="image/vnd.microsoft.icon" >`},
+		{"icon.jpg", []string{"rel", "shortcut"}, `<link href="icon.jpg" type="image/vnd.microsoft.icon" rel="shortcut" >`},
+		{"icon.png", []string{"rel", "shortcut", "type", "image/png"}, `<link href="icon.png" type="image/png" rel="shortcut" >`},
+	}
+
+	for _, s := range tests {
+		tagopt, err := newTagOpts(s.args...)
+		if err != nil {
+			t.Error(err)
+		}
+
+		got := string(FaviconLinkTag(s.name, tagopt))
+		if err := verifyTagOpts(got, tagopt); err != nil {
+			t.Error(err)
+		}
+
+		if err := verifyWant(got, s.want); err != nil {
 			t.Error(err)
 		}
 	}
