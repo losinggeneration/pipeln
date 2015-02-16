@@ -1,8 +1,11 @@
 package template
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
+	"html/template"
+	"strconv"
 	"strings"
 	"testing"
 )
@@ -63,6 +66,41 @@ func verifyTag(got, want string) error {
 	}
 
 	return nil
+}
+
+func TestFuncMap(t *testing.T) {
+	tests := []struct {
+		template string
+		want     string
+	}{
+		{`{{javascript_include_tag "a"}}`, `<script src="a" ></script>`},
+		{`{{javascript_include_tag "a" ( tag_opts "c" "d" )}}`, `<script src="a" c="d" ></script>`},
+		{`{{stylesheet_link_tag "a"}}`, `<link href="a" rel="stylesheet" >`},
+		{`{{stylesheet_link_tag "a" ( tag_opts "c" "d" )}}`, `<link href="a" rel="stylesheet" c="d" >`},
+		{`{{favicon_link_tag "a"}}`, `<link href="a" type="image/vnd.microsoft.icon" >`},
+		{`{{favicon_link_tag "a" ( tag_opts "type" "image/png" "rel" "shortcut" )}}`, `<link href="a" type="image/png" rel="shortcut" >`},
+	}
+
+	for i, s := range tests {
+		temp := template.New("test" + strconv.Itoa(i))
+		FuncMap(temp)
+
+		temp, err := temp.Parse(s.template)
+		if err != nil {
+			fmt.Println(s.template)
+			t.Error(err)
+		}
+
+		buffer := bytes.NewBuffer(make([]byte, 0))
+		if err := temp.Execute(buffer, nil); err != nil {
+			t.Error(err)
+		}
+
+		got := buffer.String()
+		if err := verifyWant(got, s.want); err != nil {
+			t.Error(err)
+		}
+	}
 }
 
 func TestTagOptsStringer(t *testing.T) {
