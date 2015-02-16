@@ -69,7 +69,7 @@ func newTagOpts(opts ...string) (TagOpts, error) {
 	var to TagOpts
 
 	if len(opts) == 0 {
-		return to, nil
+		return make(TagOpts), nil
 	} else if len(opts)%2 == 1 {
 		return to, errors.New("expects an even number of parameters")
 	} else {
