@@ -1,6 +1,48 @@
 package template
 
-import "testing"
+import (
+	"errors"
+	"fmt"
+	"strings"
+	"testing"
+)
+
+func verifyTagOpts(want string, opts ...TagOpts) error {
+	if len(opts) == 0 || opts == nil {
+		return nil
+	}
+
+	for _, opt := range opts {
+		for k, v := range opt {
+			if strings.Contains(want, fmt.Sprintf("%v=%q", k, v)) == false {
+				return errors.New(fmt.Sprintf("%v=%q is not in '%v'", k, v, want))
+			}
+		}
+	}
+
+	return nil
+}
+
+func verifyTag(got, want string) error {
+	if got == want {
+		return nil
+	}
+
+	// Make sure all tags we got are there
+	for _, s := range strings.Split(got, " ") {
+		if !strings.Contains(want, s) {
+			return errors.New(fmt.Sprintf("'%v' is not in '%v'", s, want))
+		}
+	}
+
+	// Make sure it's not missing any expected tags
+	for _, s := range strings.Split(want, " ") {
+		if !strings.Contains(got, s) {
+			return errors.New(fmt.Sprintf("'%v' is not in '%v'", s, got))
+		}
+	}
+	return nil
+}
 
 func TestTagOptsStringer(t *testing.T) {
 	tests := []struct {
@@ -13,8 +55,8 @@ func TestTagOptsStringer(t *testing.T) {
 	}
 
 	for _, s := range tests {
-		if s.tagopt.String() != s.want {
-			t.Errorf(`'%v' != '%v'`, s.tagopt.String(), s.want)
+		if err := verifyTagOpts(s.want, s.tagopt); err != nil {
+			t.Error(err)
 		}
 	}
 }
@@ -36,8 +78,12 @@ func TestNewTagOpts(t *testing.T) {
 			t.Error(err)
 		}
 
-		if tagopt.String() != s.want {
-			t.Errorf(`'%v' != '%v'`, tagopt.String(), s.want)
+		if err := verifyTagOpts(tagopt.String(), tagopt); err != nil {
+			t.Error(err)
+		}
+
+		if err := verifyTagOpts(s.want, tagopt); err != nil {
+			t.Error(err)
 		}
 	}
 
@@ -71,8 +117,13 @@ func TestGetTagOpt(t *testing.T) {
 
 	for _, s := range tests {
 		tagopt := getTagOpt(s.tagopts...)
-		if tagopt.String() != s.want {
-			t.Errorf(`'%v' != '%v'`, tagopt.String(), s.want)
+
+		if err := verifyTagOpts(tagopt.String(), tagopt); err != nil {
+			t.Error(err)
+		}
+
+		if err := verifyTagOpts(s.want, tagopt); err != nil {
+			t.Error(err)
 		}
 	}
 }
@@ -94,8 +145,13 @@ func TestTag(t *testing.T) {
 			t.Error(err)
 		}
 
-		if string(tag(s.tag, tagopt)) != s.want {
-			t.Errorf(`'%v' != '%v'`, tagopt.String(), s.want)
+		got := string(tag(s.tag, tagopt))
+		if err := verifyTagOpts(got, tagopt); err != nil {
+			t.Error(err)
+		}
+
+		if err := verifyTag(got, s.want); err != nil {
+			t.Error(err)
 		}
 	}
 }
