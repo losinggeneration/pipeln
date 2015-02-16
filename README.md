@@ -1,6 +1,6 @@
 #Pipeln
 
-This is a negroni middleware inspired by Sprockets for Rails.
+This is a negroni middleware inspired by Sprockets with Rails.
 
 Curently it has the following features:
 * Asset lookup based on a default (but configurable) layout.
