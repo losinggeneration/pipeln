@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"errors"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -189,10 +188,5 @@ func javascriptRequire(filename, argument string) (string, error) {
 	}
 	defer file.Close()
 
-	src, err := ioutil.ReadAll(file)
-	if err != nil {
-		return "", err
-	}
-
-	return string(src), nil
+	return processJavascriptRequires(file)
 }
