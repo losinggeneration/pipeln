@@ -83,14 +83,8 @@ func ProcessFile(f *os.File) (string, error) {
 func processJavascriptRequires(f *os.File) (string, error) {
 	fbio := bufio.NewReader(f)
 
-	// Store matches here
-	matches := make([]map[string]string, 0)
-
 	// file's contents
 	var fsrc string
-
-	// String to return with parsed files
-	var src string
 
 	for {
 		// Read each line
@@ -98,7 +92,7 @@ func processJavascriptRequires(f *os.File) (string, error) {
 		if err == io.EOF {
 			break
 		} else if err != nil {
-			return src, err
+			return fsrc, err
 		}
 
 		fsrc += string(line) + "\n"
@@ -106,12 +100,13 @@ func processJavascriptRequires(f *os.File) (string, error) {
 		// Match ^//= require(_tree)? (.*)$
 		r, err := regexp.Compile(`^//=[[:blank:]]*require(?P<tree>_tree)?[[:blank:]]+(?P<argument>.*)$`)
 		if err != nil {
-			return src, err
+			return fsrc, err
 		}
 
 		sm := r.FindStringSubmatch(string(line))
 		m := make(map[string]string)
 		if len(sm) > 0 {
+			var src string
 			// Take each match and associate it with the named match
 			for i, name := range r.SubexpNames() {
 				// Don't include non-matches
@@ -119,32 +114,24 @@ func processJavascriptRequires(f *os.File) (string, error) {
 					m[name] = sm[i]
 				}
 			}
-
-			// Store the match from this line
-			matches = append(matches, m)
+			if m["tree"] != "" {
+				s, err := javascriptRequireTree(f.Name(), m["argument"])
+				if err != nil {
+					return src, err
+				}
+				src += s
+			} else {
+				s, err := javascriptRequire(f.Name(), m["argument"])
+				if err != nil {
+					return src, err
+				}
+				src += s
+			}
+			fsrc += src
 		}
 	}
 
-	// Go through each match and process it appropriately
-	for _, m := range matches {
-		if m["tree"] != "" {
-			s, err := javascriptRequireTree(f.Name(), m["argument"])
-			if err != nil {
-				return src, err
-			}
-			src += s
-		} else {
-			s, err := javascriptRequire(f.Name(), m["argument"])
-			if err != nil {
-				return src, err
-			}
-			src += s
-		}
-	}
-
-	src += fsrc
-
-	return src, nil
+	return fsrc, nil
 }
 
 func javascriptRequireTree(filename, argument string) (string, error) {
