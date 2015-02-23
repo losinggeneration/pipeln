@@ -60,6 +60,12 @@ func NewAssets(options ...assets.Options) *Assets {
 }
 
 func (a *Assets) ServeHTTP(w http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
+	// Don't process if nothing is passed in
+	if req.RequestURI == "/" {
+		next(w, req)
+		return
+	}
+
 	file, err := a.Lookup(req.RequestURI)
 	if err != nil {
 		if err == assets.ErrNotFound {
