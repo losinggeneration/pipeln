@@ -1,7 +1,6 @@
 package pipeln
 
 import (
-	"fmt"
 	"html/template"
 	"io"
 	"log"
@@ -67,7 +66,7 @@ func (a *Assets) ServeHTTP(w http.ResponseWriter, req *http.Request, next http.H
 			next(w, req)
 			return
 		} else {
-			fmt.Fprintf(w, "%s", err)
+			log.Println(err)
 			return
 		}
 	}
