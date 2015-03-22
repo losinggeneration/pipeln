@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-var funcMap = template.FuncMap{
+var FuncMap = template.FuncMap{
 	"javascript_include_tag": JavascriptIncludeTag,
 	"stylesheet_link_tag":    StylesheetLinkTag,
 	"favicon_link_tag":       FaviconLinkTag,
@@ -14,7 +14,7 @@ var funcMap = template.FuncMap{
 }
 
 /*
- * FuncMap adds functions to the template
+ * Funcs adds functions to the template
  *
  * javascript_include_tag
  * Adds a script tag.
@@ -46,8 +46,8 @@ var funcMap = template.FuncMap{
  * when used to pass arguments to the various tags.
  * e.g. javascript_include_tag "bar" ( tag_opts "charset" "utf-8" )
  */
-func FuncMap(t *template.Template) {
-	t.Funcs(funcMap)
+func Funcs(t *template.Template) {
+	t.Funcs(FuncMap)
 }
 
 /* TagOpts are attribute options to insert into a tag */

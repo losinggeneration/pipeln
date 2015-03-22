@@ -14,6 +14,8 @@ import (
 	helper "github.com/losinggeneration/pipeln/html/template"
 )
 
+var FuncMap = helper.FuncMap
+
 type Assets struct {
 	assets.Assets
 }
@@ -30,8 +32,8 @@ func faviconLinkTag(name string, opts ...helper.TagOpts) template.HTML {
 	return helper.FaviconLinkTag(name, opts...)
 }
 
-func FuncMap(t *template.Template) {
-	helper.FuncMap(t)
+func Funcs(t *template.Template) {
+	helper.Funcs(t)
 
 	// override these with the ones that lookup the assets
 	t.Funcs(template.FuncMap{

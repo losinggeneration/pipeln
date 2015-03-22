@@ -68,7 +68,7 @@ func verifyTag(got, want string) error {
 	return nil
 }
 
-func TestFuncMap(t *testing.T) {
+func TestFuncs(t *testing.T) {
 	tests := []struct {
 		template string
 		want     string
@@ -83,7 +83,7 @@ func TestFuncMap(t *testing.T) {
 
 	for i, s := range tests {
 		temp := template.New("test" + strconv.Itoa(i))
-		FuncMap(temp)
+		Funcs(temp)
 
 		temp, err := temp.Parse(s.template)
 		if err != nil {

@@ -12,7 +12,7 @@ import (
 
 func testTemplate(w http.ResponseWriter, req *http.Request) {
 	t := template.New("example")
-	helper.FuncMap(t)
+	helper.Funcs(t)
 
 	t, err := t.ParseFiles("./templates/example.html")
 	if err != nil {
