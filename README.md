@@ -1,4 +1,4 @@
-#Pipeln
+# Pipeln
 
 This is a negroni middleware inspired by Sprockets with Rails.
 
@@ -7,7 +7,7 @@ Curently it has the following features:
 * Processing Javascript //=require & //=require_tree
 * Template helpers as convenience functions for script & link tags.
 
-###Example usage
+### Example usage
 ```go
 package main
 
@@ -29,7 +29,7 @@ func main() {
 }
 ```
 
-###Middleware
+### Middleware
 The middleware  should be pretty straight forward. You tell negoroni to use pipeln.NewAssets and pass it an optional pipeln/assets.Options to change the directory layout if you want. The base layout NewAssets is expecting is:
 ```
 - assets
@@ -38,7 +38,7 @@ The middleware  should be pretty straight forward. You tell negoroni to use pipe
   |- stylesheets
 ```
 
-###Assets
+### Assets
 The assets directory can be searched for assets. It also provides the functionality to process Javscript files to support the
 ```
 //= require <arg>
@@ -46,7 +46,7 @@ The assets directory can be searched for assets. It also provides the functional
 ```
 directives.
 
-###Templates
+### Templates
 Calling FuncMap and passing an *html.Template as an argument will insert in several helpers to make some head tags for link & script easier. It uses the sprockets-rails names:
 ```
 javascript_include_tag "script" tag_opts ( "attribute" "overrides" )
